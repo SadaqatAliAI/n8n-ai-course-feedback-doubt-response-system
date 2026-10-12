@@ -1,0 +1,672 @@
+{
+  "name": "Student course feedback and doubt clearance",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Course Feedback Form",
+        "formDescription": "Submit your feedback or ask a doubt about the course. Email is required so we can reply. You can submit only feedback, only a doubt, or both.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "placeholder": "student@example.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Feedback",
+              "placeholder": "Share your experience about the course..."
+            },
+            {
+              "fieldLabel": "Doubt",
+              "placeholder": "Ask your question about the course..."
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Thank You!\n\nWe'll review your feedback and/or question, and you'll receive a response at your provided email address within the next few moments.\n\nIf you don't receive the email, please check your Spam or Junk folder.\n\n\n"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -272,
+        -704
+      ],
+      "id": "e9472c2f-41ed-4da7-be7d-77678782a9c6",
+      "name": "On form submission",
+      "webhookId": "67ddadd9-a1c8-421f-bd0e-1b1d8a77cae4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "263b7764-bcb9-4827-9111-c9354bdfe05e",
+              "leftValue": "={{ $json.Feedback }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f63a539f-48bc-4e50-9de7-7ce1f4c63145",
+              "leftValue": "={{ $json.Doubt }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -48,
+        -512
+      ],
+      "id": "c1e5fd7b-dc79-4bd8-b910-1c72d0544207",
+      "name": "Both doubt and feedback"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "263b7764-bcb9-4827-9111-c9354bdfe05e",
+              "leftValue": "={{ $json.Feedback }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f63a539f-48bc-4e50-9de7-7ce1f4c63145",
+              "leftValue": "={{ $json.Doubt }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -48,
+        -1008
+      ],
+      "id": "dcfe227d-e643-45b8-b19b-e7bc843f5acb",
+      "name": "Only feedback"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "263b7764-bcb9-4827-9111-c9354bdfe05e",
+              "leftValue": "={{ $json.Feedback }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f63a539f-48bc-4e50-9de7-7ce1f4c63145",
+              "leftValue": "={{ $json.Doubt }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -48,
+        -160
+      ],
+      "id": "2ba50171-7126-4013-b0e2-bb8432191fda",
+      "name": "Only doubt"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $('On form submission').item.json.Feedback }}",
+        "options": {
+          "categories": "Positive, Negative"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+      "typeVersion": 1.1,
+      "position": [
+        176,
+        -1008
+      ],
+      "id": "5f448789-c5ff-4caf-94d3-0405ab1846e4",
+      "name": "Sentiment Analysis"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        -784
+      ],
+      "id": "d8e8d203-aa50-4a99-8dda-671cc739edfc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        -592
+      ],
+      "id": "d4978bb3-34ca-4207-9f97-dcf7d9616d4b",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Student Course Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('On form submission').item.json.Email }}",
+            "Feedback": "={{ $('On form submission').item.json.Feedback }}",
+            "Doubt": "={{ $('On form submission').item.json.Doubt }}",
+            "Sentiment Analysis": "={{ $json.sentimentAnalysis.category }}",
+            "TimeStamp": "={{\nDateTime.fromISO($('On form submission').item.json.submittedAt)\n  .toFormat(\"dd LLLL yyyy, h:mm a\")\n}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Feedback",
+              "displayName": "Feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Doubt",
+              "displayName": "Doubt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment Analysis",
+              "displayName": "Sentiment Analysis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TimeStamp",
+              "displayName": "TimeStamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        592,
+        -1008
+      ],
+      "id": "0f6ab404-705c-4ecc-bec7-ccb24d9dee85",
+      "name": "Saving Student Data in Google Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "281c643b-fa7f-4da5-98e7-931c66ba1839",
+              "leftValue": "={{ $('Sentiment Analysis').item.json.sentimentAnalysis.category }}",
+              "rightValue": "Positive",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        880,
+        -704
+      ],
+      "id": "870b6cc1-a298-444d-b14a-f37fd0af129a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Thank You for Your Positive Course Feedback",
+        "message": "={{ $('Feedback response generator').item.json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1104,
+        -704
+      ],
+      "id": "924c00e9-6232-4cce-8b45-4fcc87cf1cd1",
+      "name": "Mail sender for +ve feedback",
+      "webhookId": "d9c16757-faf8-4fef-8ceb-cd69bf4dbb7b",
+      "credentials": {
+        "gmailOAuth2": {
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Thank You for Sharing Your Course Feedback",
+        "message": "={{ $('Feedback response generator').item.json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1104,
+        -512
+      ],
+      "id": "238c9045-8d78-481e-9271-a2f7915d4e65",
+      "name": "Mail sender for -ve feedback",
+      "webhookId": "d9c16757-faf8-4fef-8ceb-cd69bf4dbb7b",
+      "credentials": {
+        "gmailOAuth2": {
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a detailed HTML email response for the following student doubt.\n\nStudent Doubt:\n{{ $('On form submission').item.json.Doubt }}\n\nRequirements:\n- Answer the question completely.\n- Include definitions when appropriate.\n- Explain the concept step by step.\n- Provide practical examples.\n- If the topic is technical or programming-related, include properly formatted code examples using HTML <pre><code>...</code></pre> blocks.\n- If multiple approaches exist, briefly compare them and recommend the most suitable one.\n- Include a short \"Key Takeaways\" section at the end.\n- Return ONLY a valid HTML fragment.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert programming instructor and course support assistant.\n\nYour task is to answer a student's course-related doubt by generating a professional, educational email.\n\nRules:\n- Return ONLY a valid HTML fragment.\n- Do NOT include <html>, <head>, or <body> tags.\n- Do NOT wrap the HTML inside Markdown code fences.\n- Use semantic HTML elements such as <h2>, <h3>, <p>, <strong>, <ul>, <ol>, <li>, <pre>, <code>, <blockquote>, and <br>.\n- Begin by thanking the student for reaching out.\n- Clearly acknowledge the student's question.\n- Provide a complete, accurate, and easy-to-understand explanation.\n- Break the explanation into logical sections using headings.\n- Include definitions where appropriate.\n- Explain concepts step by step.\n- Include practical examples whenever they improve understanding.\n- If the doubt is related to programming, scripting, SQL, APIs, AI, automation, or any technical topic, include one or more relevant code examples.\n- Display all code inside HTML <pre><code>...</code></pre> blocks so that it appears as a readable code block in the email.\n- Escape HTML special characters inside code examples (for example, use &lt; instead of < and &gt; instead of >).\n- If the question is non-technical, do not include unnecessary code.\n- Use bullet points or numbered lists when helpful.\n- If appropriate, include a \"Key Takeaways\" section summarizing the main points.\n- Keep the explanation educational rather than overly brief.\n- Maintain a friendly, encouraging, and professional tone.\n- Do not invent course-specific information.\n- If the question is unclear or lacks enough information, politely explain what additional details are needed while still providing the most helpful general guidance possible.\n- End the email with an encouraging sentence inviting the student to ask additional questions.\n\nFinish with:\n\n<p>Best regards,<br><strong>Course Support Team</strong></p>\n\nOutput ONLY the HTML fragment."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        176,
+        -416
+      ],
+      "id": "d80455ac-e14d-4f27-acff-e2fdd35e2eff",
+      "name": "Doubt response generator"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        -192
+      ],
+      "id": "02f432a4-4644-490c-ba2a-ffe341ecf45c",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Response to Your Course Doubt",
+        "message": "={{ $json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        -416
+      ],
+      "id": "aebaf1b8-7c37-43be-96e7-80b878246f30",
+      "name": "Send a message",
+      "webhookId": "b95d621b-d1e2-436a-b84d-22eba337c7ed",
+      "credentials": {
+        "gmailOAuth2": {
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate an HTML email response for the student using the following information.\n\nStudent Feedback:\n{{ $json.Feedback }}\n\nSentiment:\n{{ $json.sentimentAnalysis.category }}\n\nWrite a personalized response that acknowledges the student's feedback and matches the sentiment.\n\nReturn only a valid HTML fragment.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a professional and friendly course support assistant.\n\nYour task is to generate a polite email response to a student's course feedback.\n\nRules:\n- Return ONLY a valid HTML fragment.\n- Do NOT include <html>, <head>, or <body> tags.\n- Use clean HTML formatting with elements such as <h2>, <p>, <strong>, <ul>, and <br> where appropriate.\n- Thank the student for taking the time to provide feedback.\n- Acknowledge the feedback naturally.\n- If the sentiment is positive, express appreciation and encourage continued learning.\n- If the sentiment is negative, apologize for the student's experience, acknowledge their concerns, and assure them that their feedback will help improve the course.\n- Keep the tone warm, professional, and supportive.\n- Do not invent information about the course.\n- Keep the response between 120 and 200 words.\n- End with a polite closing such as:\n  \"Best regards,<br>Course Support Team\"\n- Output only the HTML fragment and nothing else."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        528,
+        -816
+      ],
+      "id": "d40a5b39-b2a1-4c3a-8198-d14002b54828",
+      "name": "Feedback response generator"
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Only feedback",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Both doubt and feedback",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Only doubt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only feedback": {
+      "main": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Both doubt and feedback": {
+      "main": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Doubt response generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment Analysis": {
+      "main": [
+        [
+          {
+            "node": "Feedback response generator",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Saving Student Data in Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Feedback response generator",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Saving Student Data in Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Feedback response generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Mail sender for +ve feedback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mail sender for -ve feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only doubt": {
+      "main": [
+        [
+          {
+            "node": "Doubt response generator",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Saving Student Data in Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Doubt response generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doubt response generator": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback response generator": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "tags": []
+}
